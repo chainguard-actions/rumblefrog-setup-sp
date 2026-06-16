@@ -1,0 +1,37 @@
+name: Test specific version installation
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: setup-sp
+        uses: .
+        with:
+          version: '1.11.x'
+          github-token: ${{ github.token }}
+      - name: Assert version output is set
+        env:
+          ACTUAL: ${{ steps.setup-sp.outputs.version }}
+        run: |
+          echo "actual version: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected version output to be non-empty"
+            exit 1
+          fi
+          echo "PASS: version output is '$ACTUAL'"
+      - name: Assert version contains 1.11
+        env:
+          ACTUAL: ${{ steps.setup-sp.outputs.version }}
+        run: |
+          echo "actual version: $ACTUAL"
+          if [[ "$ACTUAL" != 1.11* ]]; then
+            echo "FAIL: expected version to start with '1.11', got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS: version '$ACTUAL' matches 1.11.x"
+      - name: Assert spcomp is available on PATH
+        run: |
+          which spcomp || (echo "FAIL: spcomp not found on PATH" && exit 1)
+          echo "PASS: spcomp found at $(which spcomp)"

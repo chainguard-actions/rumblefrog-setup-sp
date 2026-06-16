@@ -1,15 +1,83 @@
-# rumblefrog/setup-sp
+# Setup SourcePawn Action
 
-Install and setup SourcePawn compiler
+![](https://github.com/rumblefrog/setup-sp/workflows/Main%20Workflow/badge.svg)
 
-Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/rumblefrog/setup-sp](https://github.com/rumblefrog/setup-sp).
+This action sets-up, cache and adds sourcemod scripting directory to the path
 
-## Versions
+# Usage
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v1.2.3 | [`v1.2.3`](https://github.com/chainguard-actions/rumblefrog-setup-sp/tree/v1.2.3) | [`477b2e4`](https://github.com/rumblefrog/setup-sp/commit/477b2e4c6983ea665efdedd62b9da8d7465b0814) |
+See [action.yml](https://github.com/rumblefrog/setup-sp/blob/master/action.yml)
 
+## Basic:
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+
+- uses: rumblefrog/setup-sp@master
+  with:
+    version: '1.12.x'
+
+- run: spcomp -iAnotherIncludeDirectory plugin.sp -o output/plugin.smx
+```
+
+## Matrix:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sm-version: [ '1.11.x', '1.12.x', '1.11.6467', '>= 1.11.6478']
+
+    name: SM version ${{ matrix.sm-version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup SP
+        uses: rumblefrog/setup-sp@master
+        with:
+          version: ${{ matrix.sm-version }}
+
+      - run: spcomp -iAnotherIncludeDirectory plugin.sp -o output/plugin.smx
+```
+
+## Extract the version of the .sp file:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    name: SM version ${{ matrix.sm-version }}
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Setup SP
+        id: setup_sp
+        uses: rumblefrog/setup-sp@master
+        with:
+          version: '1.10.x'
+          version-file: ./plugin.sp
+
+      - run: |
+          spcomp -iAnotherIncludeDirectory plugin.sp -o output/plugin.smx
+          echo Plugin version ${{ steps.setup_sp.outputs.plugin-version }}
+```
+
+## Using a GitHub token to avoid rate limiting:
+
+When fetching recent SourceMod builds (1.13.7305+), the action queries the GitHub releases API. To avoid rate limiting, pass a GitHub token:
+
+```yaml
+- uses: rumblefrog/setup-sp@master
+  with:
+    version: '1.13.x'
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+A complete workflow example can be found [here](https://github.com/Sarrus1/DiscordWebhookAPI/blob/master/.github/workflows/master.yml).
 ## Privacy
 
 This Action contacts Chainguard's licensing server to verify authorization. Connection metadata (IP address, GitHub repository identifier, timestamp, and any metadata encoded in the auth token) is transmitted to Chainguard, Inc. even if authorization is denied in accordance with our [Privacy Notice](https://www.chainguard.dev/legal/privacy-notice)
