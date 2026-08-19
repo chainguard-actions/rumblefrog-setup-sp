@@ -1,0 +1,53 @@
+name: Test SP compiler setup with no-spcomp-proxy
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        name: Setup SourcePawn compiler without proxy
+        uses: .
+        with:
+          version: '1.10.x'
+          no-spcomp-proxy: 'true'
+
+      - name: Assert version output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.version }}
+        run: |
+          echo "actual version: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: version output is empty"
+            exit 1
+          fi
+          echo "PASS: version output is '$ACTUAL'"
+
+      - name: Assert spcomp is on PATH
+        run: |
+          if ! command -v spcomp &>/dev/null && ! command -v spcomp64 &>/dev/null; then
+            echo "FAIL: spcomp/spcomp64 not found on PATH"
+            exit 1
+          fi
+          echo "PASS: spcomp is available on PATH"
+
+      - name: Assert spcomp is the original binary (not a proxy script)
+        run: |
+          # When no-spcomp-proxy is true, spcomp64 should be the original ELF binary
+          # not a bash proxy script
+          SPCOMP_PATH="$(command -v spcomp64 2>/dev/null || command -v spcomp 2>/dev/null)"
+          echo "spcomp path: $SPCOMP_PATH"
+          if [ -z "$SPCOMP_PATH" ]; then
+            echo "FAIL: could not find spcomp on PATH"
+            exit 1
+          fi
+          # Check it's not a bash script (proxy would start with #!/bin/bash)
+          FIRST_LINE="$(head -1 "$SPCOMP_PATH" 2>/dev/null || true)"
+          echo "first line: $FIRST_LINE"
+          if echo "$FIRST_LINE" | grep -q "#!/bin/bash"; then
+            echo "FAIL: spcomp64 is a proxy script, expected original binary"
+            exit 1
+          fi
+          echo "PASS: spcomp64 is the original binary (no proxy)"

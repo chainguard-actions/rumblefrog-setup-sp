@@ -1,0 +1,58 @@
+name: Test SP compiler setup with version-file and no define-name
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a sample .sp file with version assignment
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/plugin-nodefine.sp" <<'EOF'
+          public Plugin myinfo = {
+              name = "Test Plugin",
+              version = "2.5.1",
+          };
+          EOF
+
+      - id: action
+        name: Setup SourcePawn compiler with version-file (no define-name)
+        uses: .
+        with:
+          version: '1.10.x'
+          version-file: 'tests/fixtures/plugin-nodefine.sp'
+
+      - name: Assert compiler version output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.version }}
+        run: |
+          echo "actual compiler version: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: compiler version output is empty"
+            exit 1
+          fi
+          echo "PASS: compiler version is '$ACTUAL'"
+
+      - name: Assert spcomp is on PATH
+        run: |
+          if ! command -v spcomp &>/dev/null && ! command -v spcomp64 &>/dev/null; then
+            echo "FAIL: spcomp/spcomp64 not found on PATH"
+            exit 1
+          fi
+          echo "PASS: spcomp is available on PATH"
+
+      - name: Assert scriptingPath and includePath are set
+        run: |
+          echo "scriptingPath: $scriptingPath"
+          echo "includePath: $includePath"
+          if [ -z "$scriptingPath" ]; then
+            echo "FAIL: scriptingPath env var is not set"
+            exit 1
+          fi
+          if [ -z "$includePath" ]; then
+            echo "FAIL: includePath env var is not set"
+            exit 1
+          fi
+          echo "PASS: both env vars are set"

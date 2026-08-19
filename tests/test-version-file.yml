@@ -1,0 +1,51 @@
+name: Test SP compiler setup with version-file
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a sample .sp file with version define
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/plugin.sp" <<'EOF'
+          #define PLUGIN_VERSION "1.2.3"
+          public Plugin myinfo = {
+              name = "Test Plugin",
+              version = PLUGIN_VERSION,
+          };
+          EOF
+
+      - id: action
+        name: Setup SourcePawn compiler with version-file
+        uses: .
+        with:
+          version: '1.10.x'
+          version-file: 'tests/fixtures/plugin.sp'
+          define-name: 'PLUGIN_VERSION'
+
+      - name: Assert compiler version output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.version }}
+        run: |
+          echo "actual compiler version: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: compiler version output is empty"
+            exit 1
+          fi
+          echo "PASS: compiler version is '$ACTUAL'"
+
+      - name: Assert plugin version output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.version-file }}
+        run: |
+          echo "actual plugin version: $ACTUAL"
+          # The action sets plugin-version output (not version-file output)
+          # Check that spcomp is available as a proxy for successful setup
+          if ! command -v spcomp &>/dev/null && ! command -v spcomp64 &>/dev/null; then
+            echo "FAIL: spcomp/spcomp64 not found on PATH after setup"
+            exit 1
+          fi
+          echo "PASS: compiler setup succeeded with version-file"

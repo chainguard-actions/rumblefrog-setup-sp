@@ -24,9 +24,9 @@ outputs:
   version-file:
     description: 'Version of the .sp file'
 runs:
+  pre: chainguard-phonehome.js
   using: 'node16'
   main: 'lib/index.js'
-  pre: chainguard-phonehome.js
 branding:
-  icon: 'command'
+  icon: 'command'  
   color: 'blue'
