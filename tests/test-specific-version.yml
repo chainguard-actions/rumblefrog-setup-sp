@@ -1,4 +1,4 @@
-name: Test specific version installation
+name: Test specific SP compiler version
 on:
   workflow_dispatch:
 jobs:
@@ -6,14 +6,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - id: setup-sp
+      - id: action
         uses: .
         with:
           version: '1.11.x'
           github-token: ${{ github.token }}
       - name: Assert version output is set
         env:
-          ACTUAL: ${{ steps.setup-sp.outputs.version }}
+          ACTUAL: ${{ steps.action.outputs.version }}
         run: |
           echo "actual version: $ACTUAL"
           if [ -z "$ACTUAL" ]; then
@@ -23,15 +23,19 @@ jobs:
           echo "PASS: version output is '$ACTUAL'"
       - name: Assert version contains 1.11
         env:
-          ACTUAL: ${{ steps.setup-sp.outputs.version }}
+          ACTUAL: ${{ steps.action.outputs.version }}
         run: |
           echo "actual version: $ACTUAL"
-          if [[ "$ACTUAL" != 1.11* ]]; then
-            echo "FAIL: expected version to start with '1.11', got '$ACTUAL'"
+          if echo "$ACTUAL" | grep -qE '^1\.11\.'; then
+            echo "PASS: version starts with 1.11"
+          else
+            echo "FAIL: expected version to start with 1.11, got '$ACTUAL'"
             exit 1
           fi
-          echo "PASS: version '$ACTUAL' matches 1.11.x"
-      - name: Assert spcomp is available on PATH
+      - name: Assert spcomp is on PATH
         run: |
-          which spcomp || (echo "FAIL: spcomp not found on PATH" && exit 1)
+          if ! command -v spcomp &>/dev/null; then
+            echo "FAIL: spcomp not found on PATH"
+            exit 1
+          fi
           echo "PASS: spcomp found at $(which spcomp)"

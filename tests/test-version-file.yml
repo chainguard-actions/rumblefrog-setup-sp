@@ -1,0 +1,52 @@
+name: Test SP compiler setup with version-file
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          version: '1.10.x'
+          version-file: 'tests/fixtures/plugin.sp'
+          define-name: 'PLUGIN_VERSION'
+          github-token: ${{ github.token }}
+      - name: Assert compiler version output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.version }}
+        run: |
+          echo "actual compiler version: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected version output to be non-empty"
+            exit 1
+          fi
+          echo "PASS: compiler version output is '$ACTUAL'"
+      - name: Assert plugin-version output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.plugin-version }}
+        run: |
+          echo "actual plugin-version output: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected plugin-version output to be non-empty"
+            exit 1
+          fi
+          echo "PASS: plugin-version output is '$ACTUAL'"
+      - name: Assert plugin-version output matches define value
+        env:
+          ACTUAL: ${{ steps.action.outputs.plugin-version }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "1.2.3" ]; then
+            echo "FAIL: expected plugin-version output to be '1.2.3', got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS: plugin-version output matches expected '1.2.3'"
+      - name: Assert spcomp is on PATH
+        run: |
+          if ! command -v spcomp &>/dev/null; then
+            echo "FAIL: spcomp not found on PATH"
+            exit 1
+          fi
+          echo "PASS: spcomp found at $(which spcomp)"
