@@ -6,10 +6,10 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v1.2.3 | [`v1.2.3`](https://github.com/chainguard-actions/rumblefrog-setup-sp/tree/v1.2.3) | [`477b2e4`](https://github.com/rumblefrog/setup-sp/commit/477b2e4c6983ea665efdedd62b9da8d7465b0814) |
-| v1.3.1 | [`v1.3.1`](https://github.com/chainguard-actions/rumblefrog-setup-sp/tree/v1.3.1) | [`1b616ae`](https://github.com/rumblefrog/setup-sp/commit/1b616aebc2c70430364571e2b4ad4b719164c1f7) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v1.2.3 | [`v1.2.3`](https://github.com/chainguard-actions/rumblefrog-setup-sp/tree/v1.2.3) | [`477b2e4`](https://github.com/rumblefrog/setup-sp/commit/477b2e4c6983ea665efdedd62b9da8d7465b0814) | [`HARDENING.md`](https://github.com/chainguard-actions/rumblefrog-setup-sp/blob/v1.2.3/HARDENING.md) |
+| v1.3.1 | [`v1.3.1`](https://github.com/chainguard-actions/rumblefrog-setup-sp/tree/v1.3.1) | [`1b616ae`](https://github.com/rumblefrog/setup-sp/commit/1b616aebc2c70430364571e2b4ad4b719164c1f7) | [`HARDENING.md`](https://github.com/chainguard-actions/rumblefrog-setup-sp/blob/v1.3.1/HARDENING.md) |
 
 ## Privacy
 
