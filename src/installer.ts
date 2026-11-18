@@ -39,7 +39,7 @@ export async function installCompiler(range: string): Promise<string> {
 
         const proxy_script = `
         #!/bin/bash
-        ${pathJoin(cache, 'spcomp64_original')} -i${pathJoin(cache, 'include')} $@
+        "${pathJoin(cache, 'spcomp64_original')}" "-i${pathJoin(cache, 'include')}" "$@"
         `;
 
         await writeFile(pathJoin(cache, 'spcomp'), proxy_script, { mode: 0o755 });
